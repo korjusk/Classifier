@@ -62,27 +62,26 @@ class GoogleImages:
 
         return items
 
-    def save_url(self, search_keyword):
-        # if limit > 101: download_extended_page(url,arguments['chromedriver'])
-        limit = 100
+    def save_url(self, key):
+        dir_name = key.replace(' ', '_')
+        search_keyword = key.replace(' ', '+')
 
         main_directory = "data"
-        paths = {}
-        dir_name = search_keyword.replace(' ', '_')
+        fname = f'{main_directory}/urls_{dir_name}'
 
-        url = f'https://www.google.com/search?q={search_keyword}&tbm=isch'
-        print(f'{search_keyword}: {url}')
+        # Image, Medium size, full color
+        url = f'https://www.google.com/search?q={search_keyword}&tbm=isch&tbm=isch&tbs=isz:m,ic:color'
+        print(f'{key}: {url}')
 
         raw_html = self.download_page(url)
+        limit = 100 # if limit > 101: use 'chromedriver'
         items = self._get_all_items(raw_html, limit)
 
-        with open(f'{main_directory}/urls_{dir_name}', 'w') as f:
+        with open(fname, 'w') as f:
             for item in items:
                 f.write("%s\n" % item)
 
-        print(f'Saved {len(items)} URLs to {main_directory}/urls_{dir_name}')
-
-        return paths
+        print(f'Saved {len(items)} URLs to {fname}')
 
 
 if __name__ == "__main__":
