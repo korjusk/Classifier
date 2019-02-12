@@ -63,11 +63,10 @@ class GoogleImages:
         return items
 
     def save_url(self, key):
-        dir_name = key.replace(' ', '_')
-        search_keyword = key.replace(' ', '+')
+        search_keyword = key.replace('_', '+')
 
         main_directory = "data"
-        fname = f'{main_directory}/urls_{dir_name}'
+        fname = f'{main_directory}/urls_{key}'
 
         # Image, Medium size, full color
         url = f'https://www.google.com/search?q={search_keyword}&tbm=isch&tbm=isch&tbs=isz:m,ic:color'
