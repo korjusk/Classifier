@@ -14,10 +14,14 @@ def greeting():
 
 @app.route('/handle_data', methods=['POST'])
 def handle_data():
-    c1 = request.form['first']
-    c2 = request.form['second']
-    url = request.form['url']
-    return f'First: {c1} <br>Second: {c2} <br>Url: {url}'
+    try:
+        c1 = request.form['first']
+        c2 = request.form['second']
+        url = request.form['url']
+        return classify([c1, c2], url)
+    except Exception as ex:
+        import traceback
+        return f'error <br>{traceback.format_exc()}'
 
 @app.route('/test')
 def test():
@@ -100,7 +104,7 @@ class GoogleImages:
         print(f'{key}: {url}')
 
         raw_html = self.download_page(url)
-        limit = 100 # if limit > 101: use 'chromedriver'
+        limit = 1 # if limit > 101: use 'chromedriver'
         items = self._get_all_items(raw_html, limit)
 
         with open(fname, 'w') as f:
@@ -150,7 +154,19 @@ def classify(classes, url):
     Path('data/test').mkdir(parents=True, exist_ok=True)
     res = subprocess.check_output(f'wget -q -P ./data/test {url}'.split(' '))
     gather_data(classes)
-    return f'{classes}, {url}'
+
+    np.random.seed(42)
+    data = ImageDataBunch.from_folder(path/'train', valid_pct=0.2, ds_tfms=get_transforms(), size=image_size, num_workers=4, test='test').normalize(imagenet_stats)
+
+    print(f'Classes: {data.classes}')
+
+    learn = create_cnn(data, models.resnet34, metrics=error_rate)
+    learn.fit_one_cycle(5)
+    #learn.save('stage-1')
+
+    img = learn.data.test_ds[0][0]
+    result = learn.predict(img)
+    return f'Success. <br>Classes: {data.classes} <br>Url: {url} <br>Result: {result}'
 
 
 if __name__ == "__main__":
