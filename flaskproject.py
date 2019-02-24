@@ -46,6 +46,11 @@ import urllib.request
 import http.client
 http.client._MAXHEADERS = 1000
 
+def class_to_url(c):
+    c = c.replace('_', '+')
+    # Image, Medium size, full color
+    return f'https://www.google.com/search?q={c}&tbm=isch&tbm=isch&tbs=isz:m,ic:color'
+
 
 class GoogleImages:
     def __init__(self):
@@ -103,19 +108,14 @@ class GoogleImages:
         return items
 
     def save_url(self, key):
-        search_keyword = key.replace('_', '+')
-
-        main_directory = "data"
-        fname = f'{main_directory}/urls_{key}'
-
-        # Image, Medium size, full color
-        url = f'https://www.google.com/search?q={search_keyword}&tbm=isch&tbm=isch&tbs=isz:m,ic:color'
+        url = class_to_url(key)
         logging.info(f'{key}: {url}')
 
         raw_html = self.download_page(url)
         limit = 100 # if limit > 101: use 'chromedriver'
         items = self._get_all_items(raw_html, limit)
 
+        fname = f'data/urls_{key}'
         with open(fname, 'w') as f:
             for item in items:
                 f.write("%s\n" % item)
@@ -123,8 +123,9 @@ class GoogleImages:
         logging.info(f'Saved {len(items)} URLs to {fname}')
 
 
+
+
 from fastai.vision import *
-import save_urls
 import subprocess
 import os
 import shutil
@@ -150,6 +151,7 @@ def urls_to_pics(c):
 
 def gather_data(classes):
     for c in classes:
+        c = c.replace(" ", "_")
         train = path / 'train'
         dest = path / 'train' / c
         train.mkdir(parents=True, exist_ok=True)
@@ -160,8 +162,8 @@ def gather_data(classes):
         if len(set.ls()) > 50:
             logging.info(f'Downloading skipped. {len(set.ls())} images in {set}')
         else:
-            response = save_urls.GoogleImages()
-            response.save_url(c)
+            google_img = GoogleImages()
+            google_img.save_url(c)
             urls_to_pics(c)
 
         shutil.copytree(f'sets/{c}', f'data/train/{c}')
@@ -196,7 +198,8 @@ def classify(classes, url):
     img = open_image(path/'test/00000000.jpg')
     logging.info('Starting to predict.')
     result = learn.predict(img)
-    result = f'Success. <br>Classes: {data.classes} <br>Url: {url} <br>Result: {result[0]} \n<!-- {result[2]} -->'
+    c_info = [f'{c}, URL: {class_to_url(c)}' for c in data.classes]
+    result = f'Success. <br>{c_info} <br>Input image: {url} <br>Result: {result[0]} \n<!-- {result[2]} -->'
     logging.info(result)
     return result
 
