@@ -59,7 +59,7 @@ class GoogleImages:
             resp = urllib.request.urlopen(req)
             return str(resp.read())
         except Exception as e:
-            print("Could not open URL.")
+            logging.exception('Could not open URL.')
 
     # Finding 'Next Image' from the given raw page
     def _get_next_item(self, s):
@@ -110,7 +110,7 @@ class GoogleImages:
 
         # Image, Medium size, full color
         url = f'https://www.google.com/search?q={search_keyword}&tbm=isch&tbm=isch&tbs=isz:m,ic:color'
-        print(f'{key}: {url}')
+        logging.info(f'{key}: {url}')
 
         raw_html = self.download_page(url)
         limit = 100 # if limit > 101: use 'chromedriver'
@@ -120,12 +120,15 @@ class GoogleImages:
             for item in items:
                 f.write("%s\n" % item)
 
-        print(f'Saved {len(items)} URLs to {fname}')
+        logging.info(f'Saved {len(items)} URLs to {fname}')
 
 
 from fastai.vision import *
 import save_urls
 import subprocess
+import os
+import shutil
+
 
 path = Path('data')
 t_url = 'https://pbs.twimg.com/profile_images/759735485388427265/LeMLP89w.jpg'
@@ -134,35 +137,48 @@ image_size = 224
 
 def urls_to_pics(c):
     file = f'urls_{c}'
-    dest = path / 'train' / c
+    dest = Path(f'sets/{c}')
 
-    print(f'Downloading "{c}" pictures into {dest}. [{len(dest.ls())}]')
+    logging.info(f'Downloading "{c}" pictures into {dest}. [{len(dest.ls())}]')
 
     download_images(path / file, dest, max_pics=100, timeout=1)
-    print(f'Download completed. [{len(dest.ls())}]')
+    logging.info(f'Download completed. [{len(dest.ls())}]')
 
     verify_images(dest, delete=True, max_size=image_size * 2)
-    print(f'Verifycation complete. \n\nTotal {len(dest.ls())} {c} images.\n\n')
+    logging.info(f'Verifycation complete. \n\nTotal {len(dest.ls())} {c} images.\n\n')
 
 
 def gather_data(classes):
     for c in classes:
+        train = path / 'train'
         dest = path / 'train' / c
-        dest.mkdir(parents=True, exist_ok=True)
-        c_len = len(dest.ls())
+        train.mkdir(parents=True, exist_ok=True)
 
-        if c_len > 60:
-            print(f'Downloading skipped. {c_len} images in {dest}')
+        set = Path(f'sets/{c}')
+        set.mkdir(parents=True, exist_ok=True)
+
+        if len(set.ls()) > 50:
+            logging.info(f'Downloading skipped. {len(set.ls())} images in {set}')
         else:
             response = save_urls.GoogleImages()
             response.save_url(c)
             urls_to_pics(c)
 
+        shutil.copytree(f'sets/{c}', f'data/train/{c}')
+
 
 def classify(classes, url):
     logging.info(f"classify({classes}, '{url}') called.")
-    Path('data/test').mkdir(parents=True, exist_ok=True)
-    res = subprocess.check_output(f'wget -q {url} -O ./data/test_img'.split(' '))
+
+    path.mkdir(parents=True, exist_ok=True)
+    shutil.rmtree(path)
+    path.mkdir(parents=True, exist_ok=True)
+
+    with open("data/test_urls", "w") as text_file:
+        print(url, file=text_file)
+
+    download_images('data/test_urls', 'data/test')
+
     gather_data(classes)
 
     np.random.seed(42)
@@ -177,7 +193,7 @@ def classify(classes, url):
     logging.info('Training finished.')
     #learn.save('stage-1')
 
-    img = open_image(path/'test_img')
+    img = open_image(path/'test/00000000.jpg')
     logging.info('Starting to predict.')
     result = learn.predict(img)
     result = f'Success. <br>Classes: {data.classes} <br>Url: {url} <br>Result: {result[0]} \n<!-- {result[2]} -->'
