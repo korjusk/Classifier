@@ -6,7 +6,7 @@ from flask import Flask
 from flask import request
 
 app = Flask(__name__)
-app.debug = True
+app.debug = False
 
 logging.info('Imported flask.')
 
@@ -113,7 +113,7 @@ class GoogleImages:
         print(f'{key}: {url}')
 
         raw_html = self.download_page(url)
-        limit = 1 # if limit > 101: use 'chromedriver'
+        limit = 100 # if limit > 101: use 'chromedriver'
         items = self._get_all_items(raw_html, limit)
 
         with open(fname, 'w') as f:
@@ -162,21 +162,27 @@ def gather_data(classes):
 def classify(classes, url):
     logging.info(f"classify({classes}, '{url}') called.")
     Path('data/test').mkdir(parents=True, exist_ok=True)
-    res = subprocess.check_output(f'wget -q -P ./data/test {url}'.split(' '))
+    res = subprocess.check_output(f'wget -q {url} -O ./data/test_img'.split(' '))
     gather_data(classes)
 
     np.random.seed(42)
-    data = ImageDataBunch.from_folder(path/'train', valid_pct=0.2, ds_tfms=get_transforms(), size=image_size, num_workers=4, test='test').normalize(imagenet_stats)
+    data = ImageDataBunch.from_folder(path/'train', valid_pct=0.2, ds_tfms=get_transforms(), size=image_size, num_workers=4, bs=8).normalize(imagenet_stats)
 
-    print(f'Classes: {data.classes}')
+    logging.info(f'data.classes: {data.classes}')
 
     learn = create_cnn(data, models.resnet34, metrics=error_rate)
+
+    logging.info('Starting to train.')
     learn.fit_one_cycle(5)
+    logging.info('Training finished.')
     #learn.save('stage-1')
 
-    img = learn.data.test_ds[0][0]
+    img = open_image(path/'test_img')
+    logging.info('Starting to predict.')
     result = learn.predict(img)
-    return f'Success. <br>Classes: {data.classes} <br>Url: {url} <br>Result: {result}'
+    result = f'Success. <br>Classes: {data.classes} <br>Url: {url} <br>Result: {result[0]} \n<!-- {result[2]} -->'
+    logging.info(result)
+    return result
 
 
 if __name__ == "__main__":
