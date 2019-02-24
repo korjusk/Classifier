@@ -1,5 +1,6 @@
 import logging
-logging.basicConfig(filename='error.log',level=logging.DEBUG)
+
+logging.info(f'{__name__} started.')
 
 from flask import Flask
 from flask import request
@@ -7,30 +8,38 @@ from flask import request
 app = Flask(__name__)
 app.debug = True
 
+logging.info('Imported flask.')
+
 @app.route("/")
 def greeting():
+    logging.info('greeting() called.')
     index_html = open('index.html', 'r')
     return index_html.read()
 
 @app.route('/handle_data', methods=['POST'])
 def handle_data():
+    logging.info('handle_data() called.')
     try:
         c1 = request.form['first']
         c2 = request.form['second']
         url = request.form['url']
         return classify([c1, c2], url)
     except Exception as ex:
+        logging.exception('handle_data() exception.')
         import traceback
         return f'error <br>{traceback.format_exc()}'
 
 @app.route('/test')
 def test():
+    logging.info('test() called.')
     try:
         import sys
         return f'{sys.version} <br>{sys.executable}'
     except Exception as ex:
+        logging.exception('test() exception.')
         import traceback
         return f'error <br>{traceback.format_exc()}'
+
 
 import json
 import urllib.request
@@ -151,6 +160,7 @@ def gather_data(classes):
 
 
 def classify(classes, url):
+    logging.info(f"classify({classes}, '{url}') called.")
     Path('data/test').mkdir(parents=True, exist_ok=True)
     res = subprocess.check_output(f'wget -q -P ./data/test {url}'.split(' '))
     gather_data(classes)
