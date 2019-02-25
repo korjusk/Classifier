@@ -4,17 +4,27 @@ logging.info(f'{__name__} started.')
 
 from flask import Flask
 from flask import request
+from fastai.vision import *
+import urllib.request
+import http.client
+import shutil
+
+path = Path('data')
+image_size = 224
+http.client._MAXHEADERS = 1000
 
 app = Flask(__name__)
 app.debug = False
 
-logging.info('Imported flask.')
+logging.info('Flask started')
+
 
 @app.route("/")
 def greeting():
     logging.info('greeting() called.')
     index_html = open('index.html', 'r')
     return index_html.read()
+
 
 @app.route('/handle_data', methods=['POST'])
 def handle_data():
@@ -29,6 +39,7 @@ def handle_data():
         import traceback
         return f'error <br>{traceback.format_exc()}'
 
+
 @app.route('/test')
 def test():
     logging.info('test() called.')
@@ -40,11 +51,6 @@ def test():
         import traceback
         return f'error <br>{traceback.format_exc()}'
 
-
-import json
-import urllib.request
-import http.client
-http.client._MAXHEADERS = 1000
 
 def class_to_url(c):
     c = c.replace('_', '+')
@@ -59,7 +65,8 @@ class GoogleImages:
     # Downloading entire Web Document (Raw Page Content)
     def download_page(self, url):
         try:
-            headers = {'User-Agent': "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36"}
+            headers = {
+                'User-Agent': "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36"}
             req = urllib.request.Request(url, headers=headers)
             resp = urllib.request.urlopen(req)
             return str(resp.read())
@@ -93,7 +100,7 @@ class GoogleImages:
         items = []
         i = 0
         count = 1
-        while count < limit+1:
+        while count < limit + 1:
             obj, end_content = self._get_next_item(page)
             if obj == "no_links":
                 break
@@ -112,7 +119,7 @@ class GoogleImages:
         logging.info(f'{key}: {url}')
 
         raw_html = self.download_page(url)
-        limit = 100 # if limit > 101: use 'chromedriver'
+        limit = 100  # if limit > 101: use 'chromedriver'
         items = self._get_all_items(raw_html, limit)
 
         fname = f'data/urls_{key}'
@@ -121,19 +128,6 @@ class GoogleImages:
                 f.write("%s\n" % item)
 
         logging.info(f'Saved {len(items)} URLs to {fname}')
-
-
-
-
-from fastai.vision import *
-import subprocess
-import os
-import shutil
-
-
-path = Path('data')
-t_url = 'https://pbs.twimg.com/profile_images/759735485388427265/LeMLP89w.jpg'
-image_size = 224
 
 
 def urls_to_pics(c):
@@ -146,21 +140,22 @@ def urls_to_pics(c):
     logging.info(f'Download completed. [{len(dest.ls())}]')
 
     verify_images(dest, delete=True, max_size=image_size * 2)
-    logging.info(f'Verifycation complete. \n\nTotal {len(dest.ls())} {c} images.\n\n')
+    logging.info(
+        f'Verification complete. Total {len(dest.ls())} {c} images.')
 
 
 def gather_data(classes):
     for c in classes:
         c = c.replace(" ", "_")
         train = path / 'train'
-        dest = path / 'train' / c
         train.mkdir(parents=True, exist_ok=True)
 
-        set = Path(f'sets/{c}')
-        set.mkdir(parents=True, exist_ok=True)
+        sets = Path(f'sets/{c}')
+        sets.mkdir(parents=True, exist_ok=True)
 
-        if len(set.ls()) > 50:
-            logging.info(f'Downloading skipped. {len(set.ls())} images in {set}')
+        if len(sets.ls()) > 50:
+            logging.info(
+                f'Downloading skipped. {len(sets.ls())} images in {sets}')
         else:
             google_img = GoogleImages()
             google_img.save_url(c)
@@ -184,7 +179,10 @@ def classify(classes, url):
     gather_data(classes)
 
     np.random.seed(42)
-    data = ImageDataBunch.from_folder(path/'train', valid_pct=0.2, ds_tfms=get_transforms(), size=image_size, num_workers=4, bs=8).normalize(imagenet_stats)
+    data = ImageDataBunch.from_folder(path / 'train', valid_pct=0.2,
+                                      ds_tfms=get_transforms(), size=image_size,
+                                      num_workers=4, bs=8).normalize(
+        imagenet_stats)
 
     logging.info(f'data.classes: {data.classes}')
 
@@ -193,18 +191,21 @@ def classify(classes, url):
     logging.info('Starting to train.')
     learn.fit_one_cycle(5)
     logging.info('Training finished.')
-    #learn.save('stage-1')
+    # learn.save('stage-1')
 
-    img = open_image(path/'test/00000000.jpg')
+    img = open_image(path / 'test/00000000.jpg')
     logging.info('Starting to predict.')
     result = learn.predict(img)
     c_info = [f'{c}, URL: {class_to_url(c)}' for c in data.classes]
-    result = f'Success. <br>{c_info} <br>Input image: {url} <br>Result: {result[0]} \n<!-- {result[2]} -->'
+
+    with open('success.html', 'r') as success:
+        html = success.read()
+
+    result = html % (c_info, url, result[0], result[2])
     logging.info(result)
+
     return result
 
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0')
-
-

@@ -100,3 +100,12 @@ ExecStart=/home/paperspace/anaconda3/envs/flasko/bin/gunicorn --workers 3 --bind
 [Install]
 WantedBy=multi-user.target
 ```
+
+
+#### Links
+[Gunicorn](https://gunicorn.org/) config [file](https://stackoverflow.com/questions/12063463/where-is-the-gunicorn-config-file)  
+[Nginx](https://www.nginx.com/) log [file](https://stackoverflow.com/questions/1706111/where-can-i-find-the-error-logs-of-nginx-using-fastcgi-and-django)  
+Setting [timezone](https://askubuntu.com/questions/323131/setting-timezone-from-terminal) from terminal  
+WSGI [tutorial](http://wsgi.tutorial.codepoint.net/)  
+Nginx [timeout](https://asdqwe.net/blog/solutions-504-gateway-timeout-nginx/)  
+Server [172.83.8.197](http://172.83.8.197/)  
