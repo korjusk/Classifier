@@ -211,12 +211,16 @@ def classify(classes, url):
     logging.info('Starting to predict.')
     result = learn.predict(img)
 
-    c_info = [f'{c}, URL: {class_to_url(c)}' for c in data.classes]
+    c0 = data.classes[0]
+    c1 = data.classes[1]
+
+    c0_url = class_to_url(c0)
+    c1_url = class_to_url(c1)
 
     with open('success.html', 'r') as success:
         html = success.read()
 
-    result = html % (c_info, url, result[0], result[2])
+    result = html % (result[0], url, url, url, c0_url, c0, c1_url, c1, result[2])
     logging.info(result)
 
     return result
