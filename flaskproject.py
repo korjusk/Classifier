@@ -169,16 +169,20 @@ def classify(classes, url):
 
     path.mkdir(parents=True, exist_ok=True)
     shutil.rmtree(path)
-    path.mkdir(parents=True, exist_ok=True)
+    logging.info(f'Deleted {path}')
 
+    path.mkdir(parents=True, exist_ok=True)
     with open("data/test_urls", "w") as text_file:
         print(url, file=text_file)
 
     download_images('data/test_urls', 'data/test')
+    logging.info('Downloaded test image')
 
     gather_data(classes)
 
     np.random.seed(42)
+
+    logging.info(f'Got images, make DataBunch')
     data = ImageDataBunch.from_folder(path / 'train', valid_pct=0.2,
                                       ds_tfms=get_transforms(), size=image_size,
                                       num_workers=4, bs=8).normalize(
@@ -187,15 +191,26 @@ def classify(classes, url):
     logging.info(f'data.classes: {data.classes}')
 
     learn = create_cnn(data, models.resnet34, metrics=error_rate)
+    logging.info('Created CNN')
 
-    logging.info('Starting to train.')
     learn.fit_one_cycle(5)
-    logging.info('Training finished.')
+    logging.info('Finished training CNN')
     # learn.save('stage-1')
 
-    img = open_image(path / 'test/00000000.jpg')
+    test_path = Path('data/test')
+    test_files = test_path.ls()
+
+    if len(test_files) == 0:
+        err = f'Failed to load image from: {url}'
+        logging.error(err)
+        return err
+
+    logging.info(f'Open image {test_files[0]}')
+    img = open_image(test_files[0])
+
     logging.info('Starting to predict.')
     result = learn.predict(img)
+
     c_info = [f'{c}, URL: {class_to_url(c)}' for c in data.classes]
 
     with open('success.html', 'r') as success:
