@@ -33,7 +33,9 @@ def handle_data():
         c1 = request.form['first']
         c2 = request.form['second']
         url = request.form['url']
-        return classify([c1, c2], url)
+        result = classify([c1.strip().lower(), c2.strip().lower()], url.strip())
+        logging.info('handle_data() Success!')
+        return result
     except Exception as ex:
         logging.exception('handle_data() exception.')
         import traceback
@@ -210,6 +212,7 @@ def classify(classes, url):
 
     logging.info('Starting to predict.')
     result = learn.predict(img)
+    logging.info(f'::Result:: {result}')
 
     c0 = data.classes[0]
     c1 = data.classes[1]
@@ -220,10 +223,7 @@ def classify(classes, url):
     with open('success.html', 'r') as success:
         html = success.read()
 
-    result = html % (result[0], url, url, url, c0_url, c0, c1_url, c1, result[2])
-    logging.info(result)
-
-    return result
+    return html % (result[0], url, url, url, c0_url, c0, c1_url, c1, result[2])
 
 
 if __name__ == "__main__":
