@@ -1,4 +1,8 @@
-# Classifier
+# AGI Classifier
+
+Ok, not really artificial general intelligence (AGI) but the model learns to recognize anything you want from an image.
+
+<br>
 
 ## Background
 
@@ -24,7 +28,7 @@ had to:
 * train it for 10h
 * make a prediction with the trained model  
 
-I want to automate all of that.
+I want to automate the process enough that you don't have to write any code for an image classification problem.
 
 <br>
 
@@ -33,7 +37,23 @@ I want to automate all of that.
 * Learn to deploy a machine learning project
 * Learn how to configure the server and related software
 * Build a simple classification model that could predict without being 
-explicitly programmed to perform
+explicitly programmed
+
+<br>
+
+## Production  
+
+I deployed my project in [Paperspace](https://www.paperspace.com/).  
+It's [cheap](https://www.paperspace.com/pricing), 0.50$/hour + 5$ monthly storage for:
+* Quadro P4000 GPU  
+* 8 CPU  
+* 30GB RAM  
+* 50GB SSD  
+* Static IP  
+* Fast internet  
+* Ubuntu 18.04  
+
+The server setup guide is in [setup.md](https://github.com/korjusk/Classifier/blob/master/setup.md).
 
 <br>
 
@@ -51,26 +71,41 @@ I have a picture of a cat and I want to know if it's a cat or a dog.
 
 #### Enter info and click classify
 
-![](images/result.png) 
+![](images/result.png)  
 
-<br>
 
-#### The model was trained with ~80 Googled pictures like that
-
-![](images/cat.png) 
+The model was trained with ~80 Googled pictures like [that](images/cat.png)
 
 <br>
 
 The same model can be used with multiple classes and multiple target URLs.
 And of course, instead of a cat and a dog you could enter whatever you wish. 
 For example 'gun', 'knife' and 'hotdog' or 
-'professional linkedin profile' and 'linkedin profile'.
+'professional linkedin profile' and 'linkedin profile'.  
+
+<br>  
+
+### Alternative model hosting sites  
+
+For most of these, you don't get fully configurable Ubuntu server. Instead, you upload your model and it's used only when needed.
+
+* [Render](https://render.com/)  
+$5 per month. Flask [quickstart](https://render.com/docs/deploy-flask)
+
+* Amazon [SageMaker](https://aws.amazon.com/sagemaker/)  
+[Pricing.](https://aws.amazon.com/sagemaker/pricing/) Python [SDK](https://sagemaker.readthedocs.io/en/stable/) and model deploying [guide.](https://docs.aws.amazon.com/sagemaker/latest/dg/ex1-deploy-model.html)
+
+* AWS [Elastic Beanstalk](https://aws.amazon.com/elasticbeanstalk/)  
+[Pricing.](https://aws.amazon.com/elasticbeanstalk/pricing/) Getting [started.](https://aws.amazon.com/elasticbeanstalk/getting-started/)
+
+* Google [App Engine](https://cloud.google.com/appengine/)  
+[Pricing.](https://cloud.google.com/appengine/pricing) Python [docs.](https://cloud.google.com/appengine/docs/python/)
 
 <br>
 
 ## Files
 
-* Server setup notes: [setup.md](https://github.com/korjusk/Classifier/blob/master/setup.md)
+* Server setup guide: [setup.md](https://github.com/korjusk/Classifier/blob/master/setup.md)
 * Gunicorn config: [gunicorn_config.py](https://github.com/korjusk/Classifier/blob/master/gunicorn/gunicorn_config.py)
 * Python code: [flaskproject.py](https://github.com/korjusk/Classifier/blob/master/flaskproject.py) and [wsgi.py](https://github.com/korjusk/Classifier/blob/master/wsgi.py)
 * Html code: [index.html](https://github.com/korjusk/Classifier/blob/master/index.html) and [success.html](https://github.com/korjusk/Classifier/blob/master/success.html)
