@@ -73,8 +73,7 @@ I have a picture of a cat and I want to know if it's a cat or a dog.
 
 ![](images/result.png)  
 
-
-The model was trained with ~80 Googled pictures like [that](images/cat.png)
+I'm using ResNet-34 architecture that's pretrained with ImageNet. The last layer is trained with ~80 Googled pictures of [cat](https://www.google.com/search?q=cat&tbm=isch&tbm=isch&tbs=isz:m,ic:color) and [dog.](https://www.google.com/search?q=dog&tbm=isch&tbm=isch&tbs=isz:m,ic:color)
 
 <br>
 
