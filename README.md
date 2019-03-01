@@ -10,23 +10,8 @@ They say that with Machine Learning you can make predictions without
 explicitly programming it to perform the task. For me, it seems that I 
 still need to explicitly build it for the specific task. For example, when I 
 made a [collaborative filtering](https://github.com/korjusk/MovieRec) project I
-had to:
-* collect the data
-* clean the data
-* analyze the data
-* visualize the data
-* split the data
-* define goal and success
-* make baseline predictions
-* build a test
-* figure out possible complications
-* choose frameworks and libraries
-* rent a server with Nvidia GPUs
-* install and set up everything
-* build or find a neural network
-* tune hyperparameters
-* train it for 10h
-* make a prediction with the trained model  
+had to:  
+collect, clean, analyze, visualize and split the data. Define goal and success, make baseline predictions, build a test, figure out possible complications, choose frameworks and libraries, rent a server with Nvidia GPUs, install and set up everything, build or find a neural network, tune hyperparameters, train it for hours, make a prediction with the trained model.  
 
 I want to automate the process enough that you don't have to write any code for an image classification problem.
 
@@ -59,7 +44,7 @@ The server setup guide is in [setup.md](https://github.com/korjusk/Classifier/bl
 
 ## Result
 
-I have a picture of a cat and I want to know if it's a cat or a dog.
+For example, I have a picture of a pet and I want to know if it's a cat or a dog.
 
 <br>
 
@@ -112,5 +97,13 @@ $5 per month. Flask [quickstart](https://render.com/docs/deploy-flask)
 
 <br><br>
 
+## Accessible
+
 If the website is not accessible then I probably turned it off.
 Let me know if you want to use it.
+
+<br><br>
+
+## Next step
+* Change the interface so It would be possible to enter multiple classes and URL's
+* Measure and report performance
